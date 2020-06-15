@@ -2865,7 +2865,15 @@ static jl_cgval_t emit_call(jl_codectx_t &ctx, jl_expr_t *ex, jl_value_t *rt)
         return emit_intrinsic(ctx, fi, args, nargs - 1);
     }
 
-    jl_cgval_t *argv = (jl_cgval_t*)alloca(sizeof(jl_cgval_t) * nargs);
+    jl_value_t *context = ctx.params->generic_context == jl_nothing ? nullptr : ctx.params->generic_context;
+    size_t n_generic_args = nargs + (context ? 1 : 0);
+
+    jl_cgval_t *generic_argv = (jl_cgval_t*)alloca(sizeof(jl_cgval_t) * n_generic_args);
+    jl_cgval_t *argv = generic_argv;
+    if (context) {
+        generic_argv[0] = mark_julia_const(context);
+        argv = &generic_argv[1];
+    }
     argv[0] = f;
     for (size_t i = 1; i < nargs; ++i) {
         argv[i] = emit_expr(ctx, args[i]);
@@ -2892,7 +2900,7 @@ static jl_cgval_t emit_call(jl_codectx_t &ctx, jl_expr_t *ex, jl_value_t *rt)
     }
 
     // emit function and arguments
-    Value *callval = emit_jlcall(ctx, jlapplygeneric_func, nullptr, argv, nargs, JLCALL_F_CC);
+    Value *callval = emit_jlcall(ctx, jlapplygeneric_func, nullptr, generic_argv, n_generic_args, JLCALL_F_CC);
     return mark_julia_type(ctx, callval, true, rt);
 }
 
