@@ -155,7 +155,7 @@ As in the example above, we recommend following some simple conventions when wri
    ````
 
    Examples that are untestable should be written within fenced code blocks starting with ````` ```julia`````
-   so that they are highlighted correctly in the generated documentation.
+   or  ````` ```julia-repl````` so that they are highlighted correctly in the generated documentation.
 
    !!! tip
        Wherever possible examples should be **self-contained** and **runnable** so that readers are able
